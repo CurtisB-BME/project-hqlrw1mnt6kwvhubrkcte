@@ -2,7 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { ExternalLink, Tag, Ticket, FileText, Clock, User, Edit, Trash2 } from "lucide-react";
+import { ExternalLink, Tag, Ticket, FileText, Clock, User, Edit, Trash2, CheckCircle2, XCircle } from "lucide-react";
 import { getProductColor, DEFAULT_PRODUCTS } from "@/lib/productConfig";
 import { format } from "date-fns";
 import { useState } from "react";
@@ -25,6 +25,7 @@ interface IssueData {
     id: string;
     title: string;
     product: string;
+    status?: string;
     description: string;
     solution: string;
     ticket_ids?: string;
@@ -138,34 +139,43 @@ export const IssueDialog = ({ issue, open, onOpenChange }: IssueDialogProps) => 
         onOpenChange(newOpen);
     };
 
+    const isSolved = issue.status === "Solved";
+
     return (
         <>
             <Dialog open={open} onOpenChange={handleMainDialogChange}>
                 <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <div className="flex items-start justify-between gap-4 mb-2">
-                            <Badge className={`${productColor.bgColor} ${productColor.color} border-0`}>
-                                {issue.product}
-                            </Badge>
-                            <div className="flex gap-2">
-                                <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => setEditDialogOpen(true)}
-                                >
-                                    <Edit className="h-4 w-4 mr-2" />
-                                    Edit
-                                </Button>
-                                <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={handleDeleteClick}
-                                    className="text-red-600 hover:text-red-700"
-                                >
-                                    <Trash2 className="h-4 w-4 mr-2" />
-                                    Delete
-                                </Button>
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <Badge className={`${productColor.bgColor} ${productColor.color} border-0`}>
+                                    {issue.product}
+                                </Badge>
+                                {issue.status && (
+                                    <Badge 
+                                        className={`${
+                                            isSolved 
+                                                ? 'bg-green-100 text-green-700 border-0' 
+                                                : 'bg-orange-100 text-orange-700 border-0'
+                                        }`}
+                                    >
+                                        {isSolved ? (
+                                            <CheckCircle2 className="h-3 w-3 mr-1" />
+                                        ) : (
+                                            <XCircle className="h-3 w-3 mr-1" />
+                                        )}
+                                        {issue.status}
+                                    </Badge>
+                                )}
                             </div>
+                            <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => setEditDialogOpen(true)}
+                            >
+                                <Edit className="h-4 w-4 mr-2" />
+                                Edit
+                            </Button>
                         </div>
                         <DialogTitle className="text-2xl">{issue.title}</DialogTitle>
                     </DialogHeader>
@@ -281,6 +291,23 @@ export const IssueDialog = ({ issue, open, onOpenChange }: IssueDialogProps) => 
                                 <Clock className="h-4 w-4" />
                                 <span>Updated: {format(new Date(issue.updated_at), 'PPP')}</span>
                             </div>
+                        </div>
+
+                        <Separator />
+
+                        <div className="pt-2">
+                            <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={handleDeleteClick}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50 w-full sm:w-auto"
+                            >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete Issue
+                            </Button>
+                            <p className="text-xs text-gray-500 mt-2">
+                                Deleting this issue will permanently remove it from the knowledge base.
+                            </p>
                         </div>
                     </div>
                 </DialogContent>

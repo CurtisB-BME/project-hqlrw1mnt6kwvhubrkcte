@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Tag, Clock } from "lucide-react";
+import { ExternalLink, Tag, Clock, CheckCircle2, XCircle } from "lucide-react";
 import { getProductColor, DEFAULT_PRODUCTS } from "@/lib/productConfig";
 import { format } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
@@ -10,6 +10,7 @@ interface Issue {
     id: string;
     title: string;
     product: string;
+    status?: string;
     description: string;
     solution: string;
     ticket_ids?: string;
@@ -50,6 +51,7 @@ export const IssueCard = ({ issue, onClick }: IssueCardProps) => {
     const products = dbProducts.length > 0 ? dbProducts : DEFAULT_PRODUCTS;
     const productColor = getProductColor(issue.product, products);
     const tags = issue.tags ? issue.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
+    const isSolved = issue.status === "Solved";
     
     return (
         <Card 
@@ -59,9 +61,27 @@ export const IssueCard = ({ issue, onClick }: IssueCardProps) => {
         >
             <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-2 mb-2">
-                    <Badge className={`${productColor.bgColor} ${productColor.color} border-0`}>
-                        {issue.product}
-                    </Badge>
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <Badge className={`${productColor.bgColor} ${productColor.color} border-0`}>
+                            {issue.product}
+                        </Badge>
+                        {issue.status && (
+                            <Badge 
+                                className={`${
+                                    isSolved 
+                                        ? 'bg-green-100 text-green-700 border-0' 
+                                        : 'bg-orange-100 text-orange-700 border-0'
+                                }`}
+                            >
+                                {isSolved ? (
+                                    <CheckCircle2 className="h-3 w-3 mr-1" />
+                                ) : (
+                                    <XCircle className="h-3 w-3 mr-1" />
+                                )}
+                                {issue.status}
+                            </Badge>
+                        )}
+                    </div>
                     <div className="flex items-center gap-1 text-xs text-gray-500">
                         <Clock className="h-3 w-3" />
                         {format(new Date(issue.updated_at), 'MMM d, yyyy')}

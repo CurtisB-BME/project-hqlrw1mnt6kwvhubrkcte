@@ -14,6 +14,7 @@ interface IssueData {
     id: string;
     title: string;
     product: string;
+    status?: string;
     description: string;
     solution: string;
     ticket_ids?: string;
@@ -39,6 +40,7 @@ export const EditIssueDialog = ({ issue, open, onOpenChange }: EditIssueDialogPr
     const [formData, setFormData] = useState({
         title: "",
         product: "",
+        status: "Unsolved",
         description: "",
         solution: "",
         ticket_ids: "",
@@ -70,6 +72,7 @@ export const EditIssueDialog = ({ issue, open, onOpenChange }: EditIssueDialogPr
             setFormData({
                 title: issue.title,
                 product: issue.product,
+                status: issue.status || "Unsolved",
                 description: issue.description,
                 solution: issue.solution,
                 ticket_ids: issue.ticket_ids || "",
@@ -134,20 +137,35 @@ export const EditIssueDialog = ({ issue, open, onOpenChange }: EditIssueDialogPr
                         />
                     </div>
 
-                    <div>
-                        <Label htmlFor="edit-product">Product *</Label>
-                        <Select value={formData.product} onValueChange={(value) => setFormData({ ...formData, product: value })}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select a product" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {products.map((product) => (
-                                    <SelectItem key={product.name} value={product.name}>
-                                        {product.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <Label htmlFor="edit-product">Product *</Label>
+                            <Select value={formData.product} onValueChange={(value) => setFormData({ ...formData, product: value })}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select a product" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {products.map((product) => (
+                                        <SelectItem key={product.name} value={product.name}>
+                                            {product.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div>
+                            <Label htmlFor="edit-status">Status *</Label>
+                            <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Unsolved">Unsolved</SelectItem>
+                                    <SelectItem value="Solved">Solved</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
 
                     <div>

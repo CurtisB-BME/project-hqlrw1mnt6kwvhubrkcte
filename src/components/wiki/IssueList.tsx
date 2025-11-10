@@ -5,6 +5,7 @@ interface Issue {
     id: string;
     title: string;
     product: string;
+    status?: string;
     description: string;
     solution: string;
     ticket_ids?: string;
