@@ -11,138 +11,138 @@ import { Issue, Product } from "@/entities";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle } from
+"@/components/ui/alert-dialog";
 
 interface IssueData {
-    id: string;
-    title: string;
-    product: string;
-    status?: string;
-    description: string;
-    solution: string;
-    ticket_ids?: string;
-    external_links?: string;
-    notes?: string;
-    tags?: string;
-    created_at: string;
-    updated_at: string;
-    created_by: string;
+  id: string;
+  title: string;
+  product: string;
+  status?: string;
+  description: string;
+  solution: string;
+  ticket_ids?: string;
+  external_links?: string;
+  notes?: string;
+  tags?: string;
+  created_at: string;
+  updated_at: string;
+  created_by: string;
 }
 
 interface ProductData {
-    id: string;
-    name: string;
-    color: string;
-    bgColor: string;
+  id: string;
+  name: string;
+  color: string;
+  bgColor: string;
 }
 
 interface IssueDialogProps {
-    issue: IssueData | null;
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
+  issue: IssueData | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 export const IssueDialog = ({ issue, open, onOpenChange }: IssueDialogProps) => {
-    const [editDialogOpen, setEditDialogOpen] = useState(false);
-    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-    const { toast } = useToast();
-    const queryClient = useQueryClient();
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-    const { data: dbProducts = [] } = useQuery({
-        queryKey: ['products'],
-        queryFn: async () => {
-            try {
-                const result = await Product.list('name', 1000);
-                return result as ProductData[];
-            } catch (error) {
-                console.error("Error fetching products:", error);
-                return [];
-            }
-        }
-    });
+  const { data: dbProducts = [] } = useQuery({
+    queryKey: ['products'],
+    queryFn: async () => {
+      try {
+        const result = await Product.list('name', 1000);
+        return result as ProductData[];
+      } catch (error) {
+        console.error("Error fetching products:", error);
+        return [];
+      }
+    }
+  });
 
-    if (!issue) return null;
+  if (!issue) return null;
 
-    const products = dbProducts.length > 0 ? dbProducts : DEFAULT_PRODUCTS;
-    const productColor = getProductColor(issue.product, products);
-    const tags = issue.tags ? issue.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
-    const ticketIds = issue.ticket_ids ? issue.ticket_ids.split(',').map(t => t.trim()).filter(Boolean) : [];
-    const externalLinks = issue.external_links ? issue.external_links.split(',').map(l => l.trim()).filter(Boolean) : [];
+  const products = dbProducts.length > 0 ? dbProducts : DEFAULT_PRODUCTS;
+  const productColor = getProductColor(issue.product, products);
+  const tags = issue.tags ? issue.tags.split(',').map((t) => t.trim()).filter(Boolean) : [];
+  const ticketIds = issue.ticket_ids ? issue.ticket_ids.split(',').map((t) => t.trim()).filter(Boolean) : [];
+  const externalLinks = issue.external_links ? issue.external_links.split(',').map((l) => l.trim()).filter(Boolean) : [];
 
-    const handleDeleteClick = () => {
-        console.log("Delete clicked for issue:", issue.title);
-        setDeleteDialogOpen(true);
-    };
+  const handleDeleteClick = () => {
+    console.log("Delete clicked for issue:", issue.title);
+    setDeleteDialogOpen(true);
+  };
 
-    const handleDelete = async () => {
-        console.log("Starting delete for issue:", issue.title);
-        
-        try {
-            await Issue.delete(issue.id);
-            console.log("Issue deleted successfully");
-            
-            toast({
-                title: "Issue deleted",
-                description: "The issue has been removed from the wiki.",
-            });
-            
-            // Refresh the issue list
-            await queryClient.invalidateQueries({ queryKey: ['issues'] });
-            
-            // Close both dialogs
-            setDeleteDialogOpen(false);
-            onOpenChange(false);
-        } catch (error) {
-            console.error("Error deleting issue:", error);
-            toast({
-                title: "Delete failed",
-                description: "There was an error deleting the issue.",
-                variant: "destructive",
-            });
-        } finally {
-            setDeleteDialogOpen(false);
-        }
-    };
+  const handleDelete = async () => {
+    console.log("Starting delete for issue:", issue.title);
 
-    const handleDeleteCancel = () => {
-        console.log("Delete cancelled");
-        setDeleteDialogOpen(false);
-    };
+    try {
+      await Issue.delete(issue.id);
+      console.log("Issue deleted successfully");
 
-    const handleMainDialogChange = (newOpen: boolean) => {
-        // Don't close the main dialog if the delete dialog is open
-        if (!newOpen && deleteDialogOpen) {
-            console.log("Preventing main dialog close - delete dialog is open");
-            return;
-        }
-        
-        // Don't close the main dialog if the edit dialog is open
-        if (!newOpen && editDialogOpen) {
-            console.log("Preventing main dialog close - edit dialog is open");
-            return;
-        }
-        
-        if (!newOpen) {
-            // Reset state when closing
-            setEditDialogOpen(false);
-            setDeleteDialogOpen(false);
-        }
-        
-        onOpenChange(newOpen);
-    };
+      toast({
+        title: "Issue deleted",
+        description: "The issue has been removed from the wiki."
+      });
 
-    const isSolved = issue.status === "Solved";
+      // Refresh the issue list
+      await queryClient.invalidateQueries({ queryKey: ['issues'] });
 
-    return (
-        <>
+      // Close both dialogs
+      setDeleteDialogOpen(false);
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Error deleting issue:", error);
+      toast({
+        title: "Delete failed",
+        description: "There was an error deleting the issue.",
+        variant: "destructive"
+      });
+    } finally {
+      setDeleteDialogOpen(false);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    console.log("Delete cancelled");
+    setDeleteDialogOpen(false);
+  };
+
+  const handleMainDialogChange = (newOpen: boolean) => {
+    // Don't close the main dialog if the delete dialog is open
+    if (!newOpen && deleteDialogOpen) {
+      console.log("Preventing main dialog close - delete dialog is open");
+      return;
+    }
+
+    // Don't close the main dialog if the edit dialog is open
+    if (!newOpen && editDialogOpen) {
+      console.log("Preventing main dialog close - edit dialog is open");
+      return;
+    }
+
+    if (!newOpen) {
+      // Reset state when closing
+      setEditDialogOpen(false);
+      setDeleteDialogOpen(false);
+    }
+
+    onOpenChange(newOpen);
+  };
+
+  const isSolved = issue.status === "Solved";
+
+  return (
+    <>
             <Dialog open={open} onOpenChange={handleMainDialogChange}>
                 <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
@@ -151,28 +151,28 @@ export const IssueDialog = ({ issue, open, onOpenChange }: IssueDialogProps) => 
                                 <Badge className={`${productColor.bgColor} ${productColor.color} border-0`}>
                                     {issue.product}
                                 </Badge>
-                                {issue.status && (
-                                    <Badge 
-                                        className={`${
-                                            isSolved 
-                                                ? 'bg-green-100 text-green-700 border-0' 
-                                                : 'bg-orange-100 text-orange-700 border-0'
-                                        }`}
-                                    >
-                                        {isSolved ? (
-                                            <CheckCircle2 className="h-3 w-3 mr-1" />
-                                        ) : (
-                                            <XCircle className="h-3 w-3 mr-1" />
-                                        )}
+                                {issue.status &&
+                <Badge
+                  className={`${
+                  isSolved ?
+                  'bg-green-100 text-green-700 border-0' :
+                  'bg-orange-100 text-orange-700 border-0'}`
+                  }>
+
+                                        {isSolved ?
+                  <CheckCircle2 className="h-3 w-3 mr-1" /> :
+
+                  <XCircle className="h-3 w-3 mr-1" />
+                  }
                                         {issue.status}
                                     </Badge>
-                                )}
+                }
                             </div>
-                            <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => setEditDialogOpen(true)}
-                            >
+                            <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setEditDialogOpen(true)} className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 rounded-md px-3 mx-24">
+
                                 <Edit className="h-4 w-4 mr-2" />
                                 Edit
                             </Button>
@@ -199,8 +199,8 @@ export const IssueDialog = ({ issue, open, onOpenChange }: IssueDialogProps) => 
                             <p className="text-gray-700 whitespace-pre-wrap">{issue.solution}</p>
                         </div>
 
-                        {ticketIds.length > 0 && (
-                            <>
+                        {ticketIds.length > 0 &&
+            <>
                                 <Separator />
                                 <div>
                                     <h3 className="font-semibold text-sm text-gray-700 mb-2 flex items-center gap-2">
@@ -208,18 +208,18 @@ export const IssueDialog = ({ issue, open, onOpenChange }: IssueDialogProps) => 
                                         Related Ticket IDs
                                     </h3>
                                     <div className="flex flex-wrap gap-2">
-                                        {ticketIds.map((ticketId, idx) => (
-                                            <Badge key={idx} variant="outline">
+                                        {ticketIds.map((ticketId, idx) =>
+                  <Badge key={idx} variant="outline">
                                                 {ticketId}
                                             </Badge>
-                                        ))}
+                  )}
                                     </div>
                                 </div>
                             </>
-                        )}
+            }
 
-                        {externalLinks.length > 0 && (
-                            <>
+                        {externalLinks.length > 0 &&
+            <>
                                 <Separator />
                                 <div>
                                     <h3 className="font-semibold text-sm text-gray-700 mb-2 flex items-center gap-2">
@@ -227,25 +227,25 @@ export const IssueDialog = ({ issue, open, onOpenChange }: IssueDialogProps) => 
                                         External Resources
                                     </h3>
                                     <div className="space-y-2">
-                                        {externalLinks.map((link, idx) => (
-                                            <a
-                                                key={idx}
-                                                href={link}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm"
-                                            >
+                                        {externalLinks.map((link, idx) =>
+                  <a
+                    key={idx}
+                    href={link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm">
+
                                                 <ExternalLink className="h-3 w-3" />
                                                 {link}
                                             </a>
-                                        ))}
+                  )}
                                     </div>
                                 </div>
                             </>
-                        )}
+            }
 
-                        {issue.notes && (
-                            <>
+                        {issue.notes &&
+            <>
                                 <Separator />
                                 <div>
                                     <h3 className="font-semibold text-sm text-gray-700 mb-2 flex items-center gap-2">
@@ -255,10 +255,10 @@ export const IssueDialog = ({ issue, open, onOpenChange }: IssueDialogProps) => 
                                     <p className="text-gray-700 whitespace-pre-wrap">{issue.notes}</p>
                                 </div>
                             </>
-                        )}
+            }
 
-                        {tags.length > 0 && (
-                            <>
+                        {tags.length > 0 &&
+            <>
                                 <Separator />
                                 <div>
                                     <h3 className="font-semibold text-sm text-gray-700 mb-2 flex items-center gap-2">
@@ -266,15 +266,15 @@ export const IssueDialog = ({ issue, open, onOpenChange }: IssueDialogProps) => 
                                         Tags
                                     </h3>
                                     <div className="flex flex-wrap gap-2">
-                                        {tags.map((tag, idx) => (
-                                            <Badge key={idx} variant="secondary">
+                                        {tags.map((tag, idx) =>
+                  <Badge key={idx} variant="secondary">
                                                 {tag}
                                             </Badge>
-                                        ))}
+                  )}
                                     </div>
                                 </div>
                             </>
-                        )}
+            }
 
                         <Separator />
 
@@ -296,12 +296,12 @@ export const IssueDialog = ({ issue, open, onOpenChange }: IssueDialogProps) => 
                         <Separator />
 
                         <div className="pt-2">
-                            <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={handleDeleteClick}
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50 w-full sm:w-auto"
-                            >
+                            <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDeleteClick}
+                className="text-red-600 hover:text-red-700 hover:bg-red-50 w-full sm:w-auto">
+
                                 <Trash2 className="h-4 w-4 mr-2" />
                                 Delete Issue
                             </Button>
@@ -314,10 +314,10 @@ export const IssueDialog = ({ issue, open, onOpenChange }: IssueDialogProps) => 
             </Dialog>
 
             <EditIssueDialog
-                issue={issue}
-                open={editDialogOpen}
-                onOpenChange={setEditDialogOpen}
-            />
+        issue={issue}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen} />
+
 
             <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
                 <AlertDialogContent onClick={(e) => e.stopPropagation()}>
@@ -335,6 +335,6 @@ export const IssueDialog = ({ issue, open, onOpenChange }: IssueDialogProps) => 
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </>
-    );
+        </>);
+
 };
