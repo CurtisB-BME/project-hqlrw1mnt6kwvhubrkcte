@@ -1,8 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ExternalLink, Tag, Clock } from "lucide-react";
-import { getProductColor } from "@/lib/productConfig";
+import { getProductColor, DEFAULT_PRODUCTS } from "@/lib/productConfig";
 import { format } from "date-fns";
+import { useQuery } from "@tanstack/react-query";
+import { Product } from "@/entities";
 
 interface Issue {
     id: string;
@@ -24,8 +26,29 @@ interface IssueCardProps {
     onClick: () => void;
 }
 
+interface ProductData {
+    id: string;
+    name: string;
+    color: string;
+    bgColor: string;
+}
+
 export const IssueCard = ({ issue, onClick }: IssueCardProps) => {
-    const productColor = getProductColor(issue.product);
+    const { data: dbProducts = [] } = useQuery({
+        queryKey: ['products'],
+        queryFn: async () => {
+            try {
+                const result = await Product.list('name', 1000);
+                return result as ProductData[];
+            } catch (error) {
+                console.error("Error fetching products:", error);
+                return [];
+            }
+        }
+    });
+
+    const products = dbProducts.length > 0 ? dbProducts : DEFAULT_PRODUCTS;
+    const productColor = getProductColor(issue.product, products);
     const tags = issue.tags ? issue.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
     
     return (

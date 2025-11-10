@@ -3,13 +3,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ExternalLink, Tag, Ticket, FileText, Clock, User, Edit, Trash2 } from "lucide-react";
-import { getProductColor } from "@/lib/productConfig";
+import { getProductColor, DEFAULT_PRODUCTS } from "@/lib/productConfig";
 import { format } from "date-fns";
 import { useState } from "react";
 import { EditIssueDialog } from "./EditIssueDialog";
-import { Issue } from "@/entities";
+import { Issue, Product } from "@/entities";
 import { useToast } from "@/hooks/use-toast";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -36,6 +36,13 @@ interface IssueData {
     created_by: string;
 }
 
+interface ProductData {
+    id: string;
+    name: string;
+    color: string;
+    bgColor: string;
+}
+
 interface IssueDialogProps {
     issue: IssueData | null;
     open: boolean;
@@ -48,9 +55,23 @@ export const IssueDialog = ({ issue, open, onOpenChange }: IssueDialogProps) => 
     const { toast } = useToast();
     const queryClient = useQueryClient();
 
+    const { data: dbProducts = [] } = useQuery({
+        queryKey: ['products'],
+        queryFn: async () => {
+            try {
+                const result = await Product.list('name', 1000);
+                return result as ProductData[];
+            } catch (error) {
+                console.error("Error fetching products:", error);
+                return [];
+            }
+        }
+    });
+
     if (!issue) return null;
 
-    const productColor = getProductColor(issue.product);
+    const products = dbProducts.length > 0 ? dbProducts : DEFAULT_PRODUCTS;
+    const productColor = getProductColor(issue.product, products);
     const tags = issue.tags ? issue.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
     const ticketIds = issue.ticket_ids ? issue.ticket_ids.split(',').map(t => t.trim()).filter(Boolean) : [];
     const externalLinks = issue.external_links ? issue.external_links.split(',').map(l => l.trim()).filter(Boolean) : [];

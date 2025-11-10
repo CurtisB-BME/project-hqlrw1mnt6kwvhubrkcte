@@ -4,11 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PRODUCTS } from "@/lib/productConfig";
+import { DEFAULT_PRODUCTS } from "@/lib/productConfig";
 import { useState, useEffect } from "react";
-import { Issue } from "@/entities";
+import { Issue, Product } from "@/entities";
 import { useToast } from "@/hooks/use-toast";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 
 interface IssueData {
     id: string;
@@ -20,6 +20,13 @@ interface IssueData {
     external_links?: string;
     notes?: string;
     tags?: string;
+}
+
+interface ProductData {
+    id: string;
+    name: string;
+    color: string;
+    bgColor: string;
 }
 
 interface EditIssueDialogProps {
@@ -42,6 +49,21 @@ export const EditIssueDialog = ({ issue, open, onOpenChange }: EditIssueDialogPr
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { toast } = useToast();
     const queryClient = useQueryClient();
+
+    const { data: dbProducts = [] } = useQuery({
+        queryKey: ['products'],
+        queryFn: async () => {
+            try {
+                const result = await Product.list('name', 1000);
+                return result as ProductData[];
+            } catch (error) {
+                console.error("Error fetching products:", error);
+                return [];
+            }
+        }
+    });
+
+    const products = dbProducts.length > 0 ? dbProducts : DEFAULT_PRODUCTS;
 
     useEffect(() => {
         if (issue) {
@@ -119,7 +141,7 @@ export const EditIssueDialog = ({ issue, open, onOpenChange }: EditIssueDialogPr
                                 <SelectValue placeholder="Select a product" />
                             </SelectTrigger>
                             <SelectContent>
-                                {PRODUCTS.map((product) => (
+                                {products.map((product) => (
                                     <SelectItem key={product.name} value={product.name}>
                                         {product.name}
                                     </SelectItem>

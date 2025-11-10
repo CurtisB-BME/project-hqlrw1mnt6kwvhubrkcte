@@ -4,11 +4,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PRODUCTS } from "@/lib/productConfig";
+import { DEFAULT_PRODUCTS } from "@/lib/productConfig";
 import { useState } from "react";
-import { Issue } from "@/entities";
+import { Issue, Product } from "@/entities";
 import { useToast } from "@/hooks/use-toast";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
+
+interface ProductData {
+    id: string;
+    name: string;
+    color: string;
+    bgColor: string;
+}
 
 interface CreateIssueDialogProps {
     open: boolean;
@@ -29,6 +36,21 @@ export const CreateIssueDialog = ({ open, onOpenChange }: CreateIssueDialogProps
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { toast } = useToast();
     const queryClient = useQueryClient();
+
+    const { data: dbProducts = [] } = useQuery({
+        queryKey: ['products'],
+        queryFn: async () => {
+            try {
+                const result = await Product.list('name', 1000);
+                return result as ProductData[];
+            } catch (error) {
+                console.error("Error fetching products:", error);
+                return [];
+            }
+        }
+    });
+
+    const products = dbProducts.length > 0 ? dbProducts : DEFAULT_PRODUCTS;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -99,7 +121,7 @@ export const CreateIssueDialog = ({ open, onOpenChange }: CreateIssueDialogProps
                                 <SelectValue placeholder="Select a product" />
                             </SelectTrigger>
                             <SelectContent>
-                                {PRODUCTS.map((product) => (
+                                {products.map((product) => (
                                     <SelectItem key={product.name} value={product.name}>
                                         {product.name}
                                     </SelectItem>

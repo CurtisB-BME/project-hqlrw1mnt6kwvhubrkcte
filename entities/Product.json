@@ -1,0 +1,18 @@
+{
+  "name": "Product",
+  "description": "Product or service categories for tech support issues",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Product name"
+    },
+    "color": {
+      "type": "string",
+      "description": "Tailwind text color class (e.g., text-blue-700)"
+    },
+    "bgColor": {
+      "type": "string",
+      "description": "Tailwind background color class (e.g., bg-blue-100)"
+    }
+  }
+}
