@@ -77,8 +77,6 @@ export const ProductManagementDialog = ({ open, onOpenChange }: ProductManagemen
                 description: `${productToDelete.name} has been removed.`,
             });
             queryClient.invalidateQueries({ queryKey: ['products'] });
-            setDeleteDialogOpen(false);
-            setProductToDelete(null);
         } catch (error) {
             console.error("Error deleting product:", error);
             toast({
@@ -86,7 +84,16 @@ export const ProductManagementDialog = ({ open, onOpenChange }: ProductManagemen
                 description: "There was an error deleting the product.",
                 variant: "destructive",
             });
+        } finally {
+            // Always close the dialog and reset state
+            setDeleteDialogOpen(false);
+            setProductToDelete(null);
         }
+    };
+
+    const handleDeleteCancel = () => {
+        setDeleteDialogOpen(false);
+        setProductToDelete(null);
     };
 
     const handleSubmit = async (formData: { name: string; color: string; bgColor: string }) => {
@@ -125,9 +132,20 @@ export const ProductManagementDialog = ({ open, onOpenChange }: ProductManagemen
         setSelectedProduct(null);
     };
 
+    const handleMainDialogChange = (newOpen: boolean) => {
+        if (!newOpen) {
+            // Reset all state when closing main dialog
+            setMode("list");
+            setSelectedProduct(null);
+            setDeleteDialogOpen(false);
+            setProductToDelete(null);
+        }
+        onOpenChange(newOpen);
+    };
+
     return (
         <>
-            <Dialog open={open} onOpenChange={onOpenChange}>
+            <Dialog open={open} onOpenChange={handleMainDialogChange} modal={true}>
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>
@@ -216,7 +234,7 @@ export const ProductManagementDialog = ({ open, onOpenChange }: ProductManagemen
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel onClick={handleDeleteCancel}>Cancel</AlertDialogCancel>
                         <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
                             Delete
                         </AlertDialogAction>
