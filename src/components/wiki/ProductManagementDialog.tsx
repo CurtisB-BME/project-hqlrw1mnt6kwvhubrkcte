@@ -63,20 +63,31 @@ export const ProductManagementDialog = ({ open, onOpenChange }: ProductManagemen
     };
 
     const handleDeleteClick = (product: ProductData) => {
+        console.log("Delete clicked for product:", product);
         setProductToDelete(product);
         setDeleteDialogOpen(true);
     };
 
     const handleDelete = async () => {
-        if (!productToDelete) return;
+        if (!productToDelete) {
+            console.log("No product to delete");
+            return;
+        }
 
+        console.log("Starting delete for product:", productToDelete);
+        
         try {
             await Product.delete(productToDelete.id);
+            console.log("Product deleted successfully");
+            
             toast({
                 title: "Product deleted",
                 description: `${productToDelete.name} has been removed.`,
             });
-            queryClient.invalidateQueries({ queryKey: ['products'] });
+            
+            // Refresh the product list
+            await queryClient.invalidateQueries({ queryKey: ['products'] });
+            
         } catch (error) {
             console.error("Error deleting product:", error);
             toast({
@@ -85,13 +96,14 @@ export const ProductManagementDialog = ({ open, onOpenChange }: ProductManagemen
                 variant: "destructive",
             });
         } finally {
-            // Always close the dialog and reset state
+            // Close the delete dialog and reset state
             setDeleteDialogOpen(false);
             setProductToDelete(null);
         }
     };
 
     const handleDeleteCancel = () => {
+        console.log("Delete cancelled");
         setDeleteDialogOpen(false);
         setProductToDelete(null);
     };
@@ -133,6 +145,12 @@ export const ProductManagementDialog = ({ open, onOpenChange }: ProductManagemen
     };
 
     const handleMainDialogChange = (newOpen: boolean) => {
+        // Don't close the main dialog if the delete dialog is open
+        if (!newOpen && deleteDialogOpen) {
+            console.log("Preventing main dialog close - delete dialog is open");
+            return;
+        }
+        
         if (!newOpen) {
             // Reset all state when closing main dialog
             setMode("list");
@@ -143,21 +161,9 @@ export const ProductManagementDialog = ({ open, onOpenChange }: ProductManagemen
         onOpenChange(newOpen);
     };
 
-    const handleDeleteDialogChange = (newOpen: boolean) => {
-        // Only allow closing via cancel button or after delete completes
-        if (!newOpen && productToDelete) {
-            // Don't close if we still have a product to delete (user clicked outside)
-            return;
-        }
-        setDeleteDialogOpen(newOpen);
-        if (!newOpen) {
-            setProductToDelete(null);
-        }
-    };
-
     return (
         <>
-            <Dialog open={open} onOpenChange={handleMainDialogChange} modal={true}>
+            <Dialog open={open} onOpenChange={handleMainDialogChange}>
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>
@@ -236,8 +242,8 @@ export const ProductManagementDialog = ({ open, onOpenChange }: ProductManagemen
                 </DialogContent>
             </Dialog>
 
-            <AlertDialog open={deleteDialogOpen} onOpenChange={handleDeleteDialogChange}>
-                <AlertDialogContent>
+            <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <AlertDialogContent onClick={(e) => e.stopPropagation()}>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Delete Product</AlertDialogTitle>
                         <AlertDialogDescription>
