@@ -1,0 +1,38 @@
+{
+  "name": "Issue",
+  "description": "A tech support issue with solution and related information",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Brief title of the issue"
+    },
+    "product": {
+      "type": "string",
+      "description": "Product or service this issue relates to"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description of the issue"
+    },
+    "solution": {
+      "type": "string",
+      "description": "How to resolve the issue"
+    },
+    "ticket_ids": {
+      "type": "string",
+      "description": "Related support ticket IDs (comma-separated)"
+    },
+    "external_links": {
+      "type": "string",
+      "description": "External resource URLs (comma-separated)"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes or context"
+    },
+    "tags": {
+      "type": "string",
+      "description": "Searchable tags (comma-separated)"
+    }
+  }
+}
