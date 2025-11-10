@@ -26,7 +26,6 @@ export const CreateIssueDialog = ({ open, onOpenChange }: CreateIssueDialogProps
     const [formData, setFormData] = useState({
         title: "",
         product: "",
-        status: "Unsolved",
         description: "",
         solution: "",
         ticket_ids: "",
@@ -76,7 +75,6 @@ export const CreateIssueDialog = ({ open, onOpenChange }: CreateIssueDialogProps
             setFormData({
                 title: "",
                 product: "",
-                status: "Unsolved",
                 description: "",
                 solution: "",
                 ticket_ids: "",
@@ -116,35 +114,20 @@ export const CreateIssueDialog = ({ open, onOpenChange }: CreateIssueDialogProps
                         />
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <Label htmlFor="product">Product *</Label>
-                            <Select value={formData.product} onValueChange={(value) => setFormData({ ...formData, product: value })}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select a product" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {products.map((product) => (
-                                        <SelectItem key={product.name} value={product.name}>
-                                            {product.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <div>
-                            <Label htmlFor="status">Status *</Label>
-                            <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select status" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Unsolved">Unsolved</SelectItem>
-                                    <SelectItem value="Solved">Solved</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
+                    <div>
+                        <Label htmlFor="product">Product *</Label>
+                        <Select value={formData.product} onValueChange={(value) => setFormData({ ...formData, product: value })}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a product" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {products.map((product) => (
+                                    <SelectItem key={product.name} value={product.name}>
+                                        {product.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
 
                     <div>

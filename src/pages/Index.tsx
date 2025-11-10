@@ -13,7 +13,6 @@ interface IssueData {
     id: string;
     title: string;
     product: string;
-    status?: string;
     description: string;
     solution: string;
     ticket_ids?: string;
@@ -56,7 +55,6 @@ const Index = () => {
             issue.description.toLowerCase().includes(searchLower) ||
             issue.solution.toLowerCase().includes(searchLower) ||
             issue.product.toLowerCase().includes(searchLower) ||
-            (issue.status && issue.status.toLowerCase().includes(searchLower)) ||
             (issue.tags && issue.tags.toLowerCase().includes(searchLower)) ||
             (issue.ticket_ids && issue.ticket_ids.toLowerCase().includes(searchLower)) ||
             (issue.notes && issue.notes.toLowerCase().includes(searchLower));
