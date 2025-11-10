@@ -143,6 +143,18 @@ export const ProductManagementDialog = ({ open, onOpenChange }: ProductManagemen
         onOpenChange(newOpen);
     };
 
+    const handleDeleteDialogChange = (newOpen: boolean) => {
+        // Only allow closing via cancel button or after delete completes
+        if (!newOpen && productToDelete) {
+            // Don't close if we still have a product to delete (user clicked outside)
+            return;
+        }
+        setDeleteDialogOpen(newOpen);
+        if (!newOpen) {
+            setProductToDelete(null);
+        }
+    };
+
     return (
         <>
             <Dialog open={open} onOpenChange={handleMainDialogChange} modal={true}>
@@ -224,7 +236,7 @@ export const ProductManagementDialog = ({ open, onOpenChange }: ProductManagemen
                 </DialogContent>
             </Dialog>
 
-            <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+            <AlertDialog open={deleteDialogOpen} onOpenChange={handleDeleteDialogChange}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Delete Product</AlertDialogTitle>
