@@ -76,14 +76,28 @@ export const IssueDialog = ({ issue, open, onOpenChange }: IssueDialogProps) => 
     const ticketIds = issue.ticket_ids ? issue.ticket_ids.split(',').map(t => t.trim()).filter(Boolean) : [];
     const externalLinks = issue.external_links ? issue.external_links.split(',').map(l => l.trim()).filter(Boolean) : [];
 
+    const handleDeleteClick = () => {
+        console.log("Delete clicked for issue:", issue.title);
+        setDeleteDialogOpen(true);
+    };
+
     const handleDelete = async () => {
+        console.log("Starting delete for issue:", issue.title);
+        
         try {
             await Issue.delete(issue.id);
+            console.log("Issue deleted successfully");
+            
             toast({
                 title: "Issue deleted",
                 description: "The issue has been removed from the wiki.",
             });
-            queryClient.invalidateQueries({ queryKey: ['issues'] });
+            
+            // Refresh the issue list
+            await queryClient.invalidateQueries({ queryKey: ['issues'] });
+            
+            // Close both dialogs
+            setDeleteDialogOpen(false);
             onOpenChange(false);
         } catch (error) {
             console.error("Error deleting issue:", error);
@@ -92,12 +106,41 @@ export const IssueDialog = ({ issue, open, onOpenChange }: IssueDialogProps) => 
                 description: "There was an error deleting the issue.",
                 variant: "destructive",
             });
+        } finally {
+            setDeleteDialogOpen(false);
         }
+    };
+
+    const handleDeleteCancel = () => {
+        console.log("Delete cancelled");
+        setDeleteDialogOpen(false);
+    };
+
+    const handleMainDialogChange = (newOpen: boolean) => {
+        // Don't close the main dialog if the delete dialog is open
+        if (!newOpen && deleteDialogOpen) {
+            console.log("Preventing main dialog close - delete dialog is open");
+            return;
+        }
+        
+        // Don't close the main dialog if the edit dialog is open
+        if (!newOpen && editDialogOpen) {
+            console.log("Preventing main dialog close - edit dialog is open");
+            return;
+        }
+        
+        if (!newOpen) {
+            // Reset state when closing
+            setEditDialogOpen(false);
+            setDeleteDialogOpen(false);
+        }
+        
+        onOpenChange(newOpen);
     };
 
     return (
         <>
-            <Dialog open={open} onOpenChange={onOpenChange}>
+            <Dialog open={open} onOpenChange={handleMainDialogChange}>
                 <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <div className="flex items-start justify-between gap-4 mb-2">
@@ -116,7 +159,7 @@ export const IssueDialog = ({ issue, open, onOpenChange }: IssueDialogProps) => 
                                 <Button 
                                     variant="outline" 
                                     size="sm"
-                                    onClick={() => setDeleteDialogOpen(true)}
+                                    onClick={handleDeleteClick}
                                     className="text-red-600 hover:text-red-700"
                                 >
                                     <Trash2 className="h-4 w-4 mr-2" />
@@ -250,7 +293,7 @@ export const IssueDialog = ({ issue, open, onOpenChange }: IssueDialogProps) => 
             />
 
             <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-                <AlertDialogContent>
+                <AlertDialogContent onClick={(e) => e.stopPropagation()}>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Delete Issue</AlertDialogTitle>
                         <AlertDialogDescription>
@@ -258,7 +301,7 @@ export const IssueDialog = ({ issue, open, onOpenChange }: IssueDialogProps) => 
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel onClick={handleDeleteCancel}>Cancel</AlertDialogCancel>
                         <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
                             Delete
                         </AlertDialogAction>
